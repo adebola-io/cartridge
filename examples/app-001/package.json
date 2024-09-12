@@ -8,9 +8,8 @@
     "start": "cartridge start"
   },
   "dependencies": {
-    "@adbl/cartridge": "file:../../",
-    "@adbl/bullet": "0.0.27",
-    "vite": "^5.2.10"
+    "@adbl/bullet": "0.0.28",
+    "@adbl/cartridge": "file:adbl-cartridge-0.0.0.tgz"
   },
   "main": "setup.js",
   "keywords": [],
