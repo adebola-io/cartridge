@@ -7,8 +7,10 @@
     "build": "cartridge build",
     "start": "cartridge start"
   },
-  "devDependencies": {
-    "@adbl/cartridge": "file:../../"
+  "dependencies": {
+    "@adbl/cartridge": "file:../../",
+    "@adbl/bullet": "0.0.27",
+    "vite": "^5.2.10"
   },
   "main": "setup.js",
   "keywords": [],
