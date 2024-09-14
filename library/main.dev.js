@@ -1,9 +1,8 @@
 import { createServer } from 'vite';
 import { bullet } from '@adbl/bullet/plugin';
-import fastify from 'fastify';
+import express from 'express';
 import { readFile } from 'node:fs/promises';
 import { StyleSheets } from '../utils/stylesheets.js';
-import expressPlugin from '@fastify/express';
 import { ErrorMessages } from './error-message.js';
 import { existsSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -13,8 +12,7 @@ import { resolve } from 'node:path';
  * @param {import('../index.js').CartridgeUserConfig} config
  */
 export async function run(config) {
-  const app = fastify();
-  await app.register(expressPlugin);
+  const app = express();
   const vite = await createServer({
     server: { middlewareMode: true },
     appType: 'custom',
@@ -34,15 +32,12 @@ export async function run(config) {
     res.status(200).set({ 'Content-Type': 'text/css' }).send(css);
   });
 
-  if (config.pagesFolder === undefined) {
-    console.error(ErrorMessages.NO_PAGES_FOLDER.red.italic);
-    throw new Error(ErrorMessages.NO_PAGES_FOLDER);
+  if (config.router === undefined) {
+    console.error(ErrorMessages.NO_ROUTER_FILE.red.italic);
+    throw new Error(ErrorMessages.NO_ROUTER_FILE);
   }
-  const pagesFolder = resolve(process.cwd(), config.pagesFolder);
-  writeFileSync(
-    './main.js',
-    `import { define } from '${pagesFolder}/routes.js'\n\ndefine();`
-  );
+  const router = resolve(process.cwd(), config.router);
+  writeFileSync('./main.js', `import { define } from '${router}'\n\ndefine();`);
 
   // Serve HTML
   app.use('*', async (req, res) => {
@@ -65,8 +60,8 @@ export async function run(config) {
       const rendered = await render(url, ssrManifest, stylesheets, config);
 
       const html = template
-        ?.replace('<!--app-head-->', rendered.head ?? '')
-        .replace('<!--app-html-->', rendered.html ?? '');
+        ?.replace('<!-- app-head -->', rendered.head ?? '')
+        .replace(' <!-- app-html -->', rendered.html ?? '');
 
       res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
     } catch (e) {

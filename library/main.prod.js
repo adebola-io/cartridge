@@ -1,8 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import compression from 'compression';
 import sirv from 'sirv';
-import fastify from 'fastify';
-import expressPlugin from '@fastify/express';
+import express from 'express';
 import { StyleSheets } from '../utils/stylesheets.js';
 
 /**
@@ -10,8 +9,7 @@ import { StyleSheets } from '../utils/stylesheets.js';
  * @param {import('../index.js').CartridgeUserConfig} config
  */
 export async function run(config) {
-  const app = fastify();
-  await app.register(expressPlugin);
+  const app = express();
 
   const ssrManifest = undefined;
   const template = await readFile('./dist/client/index.html', 'utf-8');
@@ -42,8 +40,8 @@ export async function run(config) {
       );
 
       const html = template
-        ?.replace('<!--app-head-->', rendered.head ?? '')
-        .replace('<!--app-html-->', rendered.html ?? '');
+        ?.replace('<!-- app-head -->', rendered.head ?? '')
+        .replace(' <!-- app-html -->', rendered.html ?? '');
 
       res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
     } catch (e) {
@@ -56,6 +54,8 @@ export async function run(config) {
   app.listen({ port: config.port }, () => {
     console.clear();
     console.log('-- Cartridge Prod Server started'.blue.italic);
-    console.log('Your app is running successfully'.green);
+    console.log(
+      `Your app is running successfully on port ${config.port}`.green.bold
+    );
   });
 }

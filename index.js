@@ -9,7 +9,7 @@
  * @property {boolean} [persistStylesToDisk]
  * Whether to persist the generated stylesheets to disk, or store it in memory. Storing it in memory is faster for requests,
  * but the styles will be lost when the server is restarted.
- * @property {string} [pagesFolder]
+ * @property {string} [router]
  * Folder where the different pages in the application are stored.
  */
 

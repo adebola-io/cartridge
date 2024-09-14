@@ -1,6 +1,6 @@
 import { Window } from 'happy-dom';
 import { serialize } from './serialize.js';
-import { resolve, join } from 'node:path';
+import { resolve } from 'node:path';
 import { existsSync } from 'node:fs';
 import { setWindowContext } from '@adbl/bullet';
 import { ErrorMessages } from './error-message.js';
@@ -36,21 +36,21 @@ export async function render(
   const elementToStyleSourceMap = new Map();
   let define;
   if (!isProduction) {
-    if (config.pagesFolder === undefined) {
-      console.error(ErrorMessages.NO_PAGES_FOLDER.red.italic);
+    if (config.router === undefined) {
+      console.error(ErrorMessages.NO_ROUTER_FILE.red.italic);
       process.exit(1);
     }
 
-    const pagesFolder = resolve(process.cwd(), config.pagesFolder);
+    const router = resolve(process.cwd(), config.router);
 
-    if (!existsSync(pagesFolder)) {
-      console.error(ErrorMessages.COULD_NOT_FIND_PAGES_FOLDER.red.italic);
+    if (!existsSync(router)) {
+      console.error(ErrorMessages.COULD_NOT_FIND_ROUTER_FILE.red.italic);
       process.exit(1);
     }
 
-    define = (await import(join(pagesFolder, 'routes.js'))).define;
+    define = (await import(router)).define;
   } else {
-    const address = resolve(process.cwd(), './dist/server/routes.js');
+    const address = resolve(process.cwd(), './dist/server/index.js');
     define = (await import(address)).define;
   }
 

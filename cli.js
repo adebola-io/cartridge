@@ -1,33 +1,35 @@
 #!/usr/bin/env node
 
 import { build } from 'vite';
+import { existsSync, readFileSync } from 'node:fs';
+import { writeFile } from 'node:fs/promises';
 import { bullet } from '@adbl/bullet/plugin';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import 'colors';
 import { ErrorMessages } from './library/error-message.js';
-import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import 'colors';
+import { resolve } from 'node:path';
 
 const args = process.argv.slice(2);
 /** @type {import('./index.js').CartridgeUserConfig} */
 const defaultConfig = {
   port: process.env.PORT ? Number(process.env.PORT) : 3002,
   stylesSheetsFolder: './.cartridge/ct-stylesheets',
-  pagesFolder: './pages',
+  router: './router/index.js',
+  base: '/',
 };
 
 switch (args[0]) {
   case 'dev': {
-    const config = getConfig();
+    const config = await getConfig();
     const { run } = await import('./library/main.dev.js');
     run(config);
     break;
   }
   case 'build': {
-    buildProject();
+    await buildProject();
     break;
   }
   case 'start': {
-    const config = getConfig();
+    const config = await getConfig();
     const { run } = await import('./library/main.prod.js');
     run(config);
     break;
@@ -60,13 +62,21 @@ function showHelpAndExit() {
 
 /**
  * Gets the configuration from the command line arguments and cartridge.config.json.
- * @returns {import('./index.js').CartridgeUserConfig}
+ * @returns {Promise<import('./index.js').CartridgeUserConfig>}
  */
-function getConfig() {
+async function getConfig() {
   // Extract config from cartridge.config.json
   let config = {};
   if (existsSync('./cartridge.config.json')) {
     config = JSON.parse(readFileSync('./cartridge.config.json', 'utf-8'));
+  } else if (existsSync('./cartridge.config.js')) {
+    const address = resolve(process.cwd(), './cartridge.config.js');
+    const imported = await import(address);
+    if (imported.default) {
+      config = imported.default;
+    } else {
+      console.error(ErrorMessages.NO_DEFAULT_EXPORT.red.italic);
+    }
   }
   const currentConfig = { ...defaultConfig, ...config };
 
@@ -92,20 +102,20 @@ function getConfig() {
       currentConfig.stylesSheetsFolder = arg.split('=')[1];
     }
 
-    if (arg.startsWith('--pagesFolder=')) {
-      currentConfig.pagesFolder = arg.split('=')[1];
+    if (arg.startsWith('--router=')) {
+      currentConfig.router = arg.split('=')[1];
     }
   }
 
   return currentConfig;
 }
 
-function buildProject() {
-  const config = getConfig();
+async function buildProject() {
+  const config = await getConfig();
   console.log('Building client and server...'.blue.italic);
   writeFile(
     './main.js',
-    `import { define } from '${config.pagesFolder}/routes.js';\ndefine();`
+    `import { define } from '${config.router}';\ndefine();`
   )
     .then(() =>
       build({
@@ -122,7 +132,7 @@ function buildProject() {
         build: {
           ssr: true,
           rollupOptions: {
-            input: `${config.pagesFolder}/routes.js`,
+            input: config.router,
           },
           outDir: 'dist/server',
         },
