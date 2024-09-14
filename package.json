@@ -1,6 +1,6 @@
 {
   "name": "@adbl/cartridge",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "dependencies": {
     "@adbl/bullet": "^0.0.28",
     "@fastify/express": "^3.0.0",

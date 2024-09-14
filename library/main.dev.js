@@ -41,7 +41,7 @@ export async function run(config) {
   const pagesFolder = resolve(process.cwd(), config.pagesFolder);
   writeFileSync(
     './main.js',
-    `import { define } from '${pagesFolder}/routes.js\n\ndefine();`
+    `import { define } from '${pagesFolder}/routes.js'\n\ndefine();`
   );
 
   // Serve HTML
