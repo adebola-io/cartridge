@@ -1,6 +1,6 @@
 {
   "name": "@adbl/cartridge",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "dependencies": {
     "@adbl/bullet": "^0.0.28",
     "colors": "^1.4.0",
