@@ -5,23 +5,27 @@
  * The root element to convert to declarative Shadow DOM.
  * @param {{ html: string, globalStyles: Set<CSSStyleSheet>, head: string }} output
  * The output object to store the serialized DOM tree.
- * @param {import('@adbl/bullet/shim').WindowContext} window
+ * @param {object} windowContext
  * The window object.
  * @param {Map<string, string[]>} styleSourceMap
  * Utility Data structure to match the stylesheet to the tag name.
  * @param {{ get: (name: string) => string | undefined, set: (key: string, value: string) => void }} styleSheetsCache
  * Utility Data structure to retrieve generated stylesheets.
- * @param {string} stylesheetsFolder
+ * @param {import('../index.js').CartridgeUserConfig} config
  * Passed in configuration for where stylesheets should be stored as they are generated.
  */
 export async function serialize(
   node,
   output,
-  window,
+  windowContext,
   styleSourceMap,
   styleSheetsCache,
-  stylesheetsFolder
+  config
 ) {
+  const window = /** @type {import('@adbl/bullet/shim').WindowContext} */ (
+    windowContext
+  );
+
   if (node instanceof window.Text || node.nodeType === 3) {
     output.html += node.textContent;
     return;
@@ -35,7 +39,7 @@ export async function serialize(
         window,
         styleSourceMap,
         styleSheetsCache,
-        stylesheetsFolder
+        config
       );
     }
     return;
@@ -95,20 +99,18 @@ export async function serialize(
       }
 
       for (const sourceString of styleSourceMap.get(node.tagName) ?? []) {
-        const base = stylesheetsFolder.split('/').at(-1);
-        if (base) {
-          const href = `/${base}/${sourceString}`;
-          // Stylesheets that are shared across elements will always be linked.
-          // An element can also decide to inline styles.
-          const shouldInlineStyles =
-            Reflect.get(node, 'bullet__inlineStyles') === true;
-          if (shouldInlineStyles && !sourceString.startsWith('shared-')) {
-            const key = sourceString?.split('.')[0];
-            const data = styleSheetsCache.get(key);
-            output.html += `<style ct-node>${data}</style>`;
-          } else {
-            output.html += `<link ct-node rel="stylesheet" href="${href}">`;
-          }
+        const base = config.stylesSheetsFolder?.split('/').at(-1);
+        const href = base ? `/${base}/${sourceString}` : `/${sourceString}`;
+        // Stylesheets that are shared across elements will always be linked.
+        // An element can also decide to inline styles.
+        const shouldInlineStyles =
+          Reflect.get(node, 'bullet__inlineStyles') === true;
+        if (shouldInlineStyles && !sourceString.startsWith('shared-')) {
+          const key = sourceString?.split('.')[0];
+          const data = styleSheetsCache.get(key);
+          output.html += `<style ct-node>${data}</style>`;
+        } else {
+          output.html += `<link ct-node rel="stylesheet" href="${href}">`;
         }
       }
 
@@ -121,7 +123,7 @@ export async function serialize(
           window,
           styleSourceMap,
           styleSheetsCache,
-          stylesheetsFolder
+          config
         );
       }
 
@@ -159,7 +161,7 @@ export async function serialize(
         window,
         styleSourceMap,
         styleSheetsCache,
-        stylesheetsFolder
+        config
       );
     }
 

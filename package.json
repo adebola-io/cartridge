@@ -1,7 +1,23 @@
 {
   "name": "@adbl/cartridge",
-  "version": "0.0.0",
-  "type": "module",
+  "version": "0.0.3",
+  "dependencies": {
+    "@adbl/bullet": "^0.0.28",
+    "@fastify/express": "^3.0.0",
+    "colors": "^1.4.0",
+    "compression": "^1.7.4",
+    "cross-env": "^7.0.3",
+    "fastify": "^4.28.1",
+    "happy-dom": "^15.7.3",
+    "sirv": "^2.0.4",
+    "vite": "^5.2.10"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.7.5"
+  },
+  "bin": {
+    "cartridge": "cli.js"
+  },
   "scripts": {
     "dev": "node index.js",
     "build": "npm run build:client && npm run build:server",
@@ -9,20 +25,5 @@
     "build:server": "vite build --ssr index.js --outDir dist/server",
     "preview": "cross-env NODE_ENV=production node dist/server"
   },
-  "bin": {
-    "cartridge": "index.js"
-  },
-  "dependencies": {
-    "@adbl/bullet": "^0.0.28",
-    "colors": "^1.4.0",
-    "compression": "^1.7.4",
-    "cross-env": "^7.0.3",
-    "express": "^4.19.2",
-    "happy-dom": "^15.7.3",
-    "sirv": "^2.0.4",
-    "vite": "^5.2.10"
-  },
-  "devDependencies": {
-    "@types/express": "^4.17.21"
-  }
+  "type": "module"
 }
