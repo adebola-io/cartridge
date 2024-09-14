@@ -9,7 +9,7 @@ import path from 'node:path';
 import process from 'node:process';
 
 export async function preflight() {
-  console.log('Preflighting...');
+  console.log('Preflight...');
   const config = {
     port: process.env.PORT || 3002,
     stylesSheetsFolder: './.cartridge/ct-stylesheets',
@@ -134,7 +134,7 @@ main(${config.port}, \`${config.stylesSheetsFolder}\`);
     });
     writeFileSync('./.cartridge/entry-client.js', entryClientData, 'utf-8');
     writeFileSync('./.cartridge/entry-server.js', entryServerData, 'utf-8');
-    writeFileSync('./cartridge-start.js', rootFile, 'utf-8');
+    writeFileSync('./index.js', rootFile, 'utf-8');
     writeFileSync(
       './.cartridge/cartridge.config.json',
       JSON.stringify(config),

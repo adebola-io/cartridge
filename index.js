@@ -19,7 +19,7 @@ if (args.length === 0) {
 switch (args[0]) {
   case 'dev': {
     preflight().then(() => {
-      execSync('node ./cartridge-start.js', { stdio: 'inherit' });
+      execSync('node ./index.js', { stdio: 'inherit' });
     });
     break;
   }
@@ -39,7 +39,7 @@ switch (args[0]) {
           build: {
             ssr: true,
             rollupOptions: {
-              input: './cartridge-start.js',
+              input: './index.js',
             },
             outDir: 'dist/server',
           },
@@ -50,12 +50,9 @@ switch (args[0]) {
     break;
   case 'start':
     preflight().then(() => {
-      execSync(
-        'cross-env NODE_ENV=production node dist/server/cartridge-start.js',
-        {
-          stdio: 'inherit',
-        }
-      );
+      execSync('cross-env NODE_ENV=production node dist/server/index.js', {
+        stdio: 'inherit',
+      });
     });
     break;
   default:
