@@ -104,7 +104,8 @@ export async function serialize(
         // Stylesheets that are shared across elements will always be linked.
         // An element can also decide to inline styles.
         const shouldInlineStyles =
-          Reflect.get(node, 'bullet__inlineStyles') === true;
+          Reflect.get(node, 'bullet__inlineStyles') === true ||
+          config.inlineAllComponentStyles;
         if (shouldInlineStyles && !sourceString.startsWith('shared-')) {
           const key = sourceString?.split('.')[0];
           const data = styleSheetsCache.get(key);
