@@ -4,16 +4,20 @@ import { execSync } from 'node:child_process';
 import { preflight } from './preflight.js';
 import { build } from 'vite';
 import { bullet } from '@adbl/bullet/plugin';
+import 'colors';
 
 const args = process.argv.slice(2);
 
 if (args.length === 0) {
-  console.log('Usage: cartridge <command>');
-  console.log('Commands:');
-  console.log('  dev');
-  console.log('  build');
-  console.log('  start');
-  process.exit(1);
+  console.log('Usage: cartridge <command>\n'.gray);
+  console.log('Available Commands:'.gray);
+  console.log('  🌟 dev     - Start the development server'.gray);
+  console.log(
+    '  ⚙️ build    - Build the client and server for production'.gray
+  );
+  console.log('  🚀 start   - Start the production server'.gray);
+  console.log('\nPlease choose a command to proceed.'.green.italic);
+  process.exit(0);
 }
 
 switch (args[0]) {
@@ -25,7 +29,7 @@ switch (args[0]) {
   }
   case 'build':
     preflight().then(() => {
-      console.log('Building client...');
+      console.log('Building client...'.blue.italic);
       build({
         root: './',
         build: {
@@ -33,7 +37,7 @@ switch (args[0]) {
         },
         plugins: [bullet()],
       }).then(() => {
-        console.log('Building server...');
+        console.log('Building server...'.cyan.italic);
         build({
           root: './',
           build: {
