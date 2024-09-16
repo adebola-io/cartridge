@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { ErrorMessages } from '../library/error-message.js';
+import process from 'node:process';
 
 export class StyleSheets {
   /**

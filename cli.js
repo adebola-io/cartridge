@@ -7,6 +7,7 @@ import { bullet } from '@adbl/bullet/plugin';
 import { ErrorMessages } from './library/error-message.js';
 import 'colors';
 import { resolve } from 'node:path';
+import process from 'node:process';
 
 const args = process.argv.slice(2);
 /** @type {import('./index.js').CartridgeUserConfig} */

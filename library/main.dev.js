@@ -6,12 +6,14 @@ import { StyleSheets } from '../utils/stylesheets.js';
 import { ErrorMessages } from './error-message.js';
 import { existsSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import process from 'node:process';
 
 /**
  * Runs the application in development mode.
  * @param {import('../index.js').CartridgeUserConfig} config
  */
 export async function run(config) {
+  console.log('Running in development mode');
   const app = express();
   const vite = await createServer({
     server: { middlewareMode: true },
@@ -24,7 +26,7 @@ export async function run(config) {
 
   // Serve generated styles.
   const { styleBase, stylesheets } = StyleSheets.initialize(config);
-  app.use(`${styleBase}/:id.css`, async (req, res) => {
+  app.use(`${styleBase}/:id.css`, (req, res) => {
     const params = /** @type {object} */ (req.params);
     const id = Reflect.get(params, 'id');
     const css = stylesheets.get(id);

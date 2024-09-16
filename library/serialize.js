@@ -1,11 +1,13 @@
+import { CSSText } from '@adbl/bullet';
+
 /**
  * Recursively converts the DOM tree of an element and its children to a declarative Shadow DOM structure.
  *
- * @param {Node} node
+ * @param {import('happy-dom').Node} node
  * The root element to convert to declarative Shadow DOM.
  * @param {{ html: string, globalStyles: Set<CSSStyleSheet>, head: string }} output
  * The output object to store the serialized DOM tree.
- * @param {object} windowContext
+ * @param {import('happy-dom').Window} windowContext
  * The window object.
  * @param {Map<string, string[]>} styleSourceMap
  * Utility Data structure to match the stylesheet to the tag name.
@@ -22,9 +24,7 @@ export async function serialize(
   styleSheetsCache,
   config
 ) {
-  const window = /** @type {import('@adbl/bullet/shim').WindowContext} */ (
-    windowContext
-  );
+  const window = windowContext;
 
   if (node instanceof window.Text || node.nodeType === 3) {
     output.html += node.textContent;
@@ -59,7 +59,7 @@ export async function serialize(
 
   if (node instanceof window.Element) {
     const tagName = node.tagName.toLowerCase();
-    output.html += `<${tagName}`;
+    output.html += `<${tagName} ct-static`;
     for (const attr of node.attributes) {
       output.html += ` ${attr.name}="${attr.value}"`;
     }
@@ -72,27 +72,30 @@ export async function serialize(
 
       // Append styles.
       if (!styleSourceMap.has(node.tagName)) {
-        const shadowDomStyles = Array.from(node.shadowRoot.adoptedStyleSheets);
+        /** @type {CSSText[] | undefined} */
+        const styleTexts = Reflect.get(node, 'bullet__cssTextArray');
         const list = [];
         let i = 0;
-        for (const style of shadowDomStyles) {
-          if (style.cssRules.length === 0) continue;
+        if (styleTexts) {
+          for (const cssText of styleTexts) {
+            if (!cssText.raw) continue;
 
-          // Stylesheet has already been processed.
-          if (Reflect.has(style, 'bullet__name')) {
-            const name = Reflect.get(style, 'bullet__name');
-            list.push(`${name}.css`);
-            continue;
+            // Stylesheet has already been processed.
+            if (Reflect.has(cssText, 'bullet__name')) {
+              const name = Reflect.get(cssText, 'bullet__name');
+              list.push(`${name}.css`);
+              continue;
+            }
+
+            // Marks the stylesheet as visited.
+            const name = generateStyleSheetId(cssText, node.tagName, i++);
+            Reflect.set(cssText, 'bullet__name', name);
+            const file = `${name}.css`;
+
+            styleSheetsCache.set(name, cssText.raw.replace(/\n/g, ''));
+
+            list.push(file);
           }
-
-          const name = generateStyleSheetId(style, node.tagName, i++);
-          Reflect.set(style, 'bullet__name', name);
-          const file = `${name}.css`;
-          const string = convertCSSStyleSheetToString(style);
-
-          styleSheetsCache.set(name, string);
-
-          list.push(file);
         }
 
         styleSourceMap.set(node.tagName, list);
@@ -104,7 +107,7 @@ export async function serialize(
         // Stylesheets that are shared across elements will always be linked.
         // An element can also decide to inline styles.
         const shouldInlineStyles =
-          Reflect.get(node, 'bullet__inlineStyles') === true ||
+          Reflect.get(node, 'bullet__inlineStyles') ||
           config.inlineAllComponentStyles;
         if (shouldInlineStyles && !sourceString.startsWith('shared-')) {
           const key = sourceString?.split('.')[0];
@@ -147,7 +150,7 @@ export async function serialize(
             output.globalStyles.add(sheet);
             const tag = tagName.toLowerCase();
             const string = convertCSSStyleSheetToString(sheet);
-            output.head += `<style data-associated-tag-name="${tag}">${string}</style>`;
+            output.head += `<style ct-node data-associated-tag-name="${tag}">${string}</style>`;
           } catch (error) {
             console.error(error);
           }
@@ -183,13 +186,13 @@ export function convertCSSStyleSheetToString(styleSheet) {
 
 /**
  * Generates a marker for a stylesheet.
- * @param {CSSStyleSheet} stylesheet
+ * @param {CSSText} cssText
  * @param {string} tagName
  * @param {number} id
  * @returns {string}
  */
-export function generateStyleSheetId(stylesheet, tagName, id) {
-  const isShared = Reflect.get(stylesheet, 'bullet__shared') === true;
+export function generateStyleSheetId(cssText, tagName, id) {
+  const isShared = Reflect.get(cssText, 'bullet__shared') === true;
   if (isShared) {
     return `shared-${id}`;
   }

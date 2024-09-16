@@ -19,7 +19,7 @@ export async function run(config) {
   app.use(base, sirv('./dist/client', { extensions: [] }));
 
   const { styleBase, stylesheets } = StyleSheets.initialize(config);
-  app.use(`${styleBase}/:id.css`, async (req, res) => {
+  app.use(`${styleBase}/:id.css`, (req, res) => {
     const id = req.params.id;
     const css = stylesheets.get(id);
 

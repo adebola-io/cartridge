@@ -2,3 +2,4 @@ examples
 bun.lockb
 .DS_Store
 jsconfig.json
+deno.json
